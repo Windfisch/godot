@@ -33,7 +33,6 @@
 #include "visual_server_global.h"
 #include "visual_server_raster.h"
 
-#include <limits>
 /* CAMERA API */
 
 RID VisualServerScene::camera_create() {
@@ -1960,10 +1959,10 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				}
 
 				if (ins->lod_begin <= 0.f) {
-					lod_begin_with_hys = -std::numeric_limits<float>::infinity();
+					lod_begin_with_hys = -Math_INF;
 				}
 				if (ins->lod_end <= 0.f) {
-					lod_end_with_hys = +std::numeric_limits<float>::infinity();
+					lod_end_with_hys = +Math_INF;
 				}
 
 				if (lod_begin_with_hys <= ins->depth && ins->depth < lod_end_with_hys) {
