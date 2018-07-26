@@ -852,6 +852,14 @@ void VisualServerScene::instance_geometry_set_material_override(RID p_instance, 
 }
 
 void VisualServerScene::instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) {
+
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->lod_begin = p_min;
+	instance->lod_end   = p_max;
+	instance->lod_begin_hysteresis = p_min_margin;
+	instance->lod_end_hysteresis   = p_max_margin;
 }
 void VisualServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) {
 }
@@ -1936,6 +1944,13 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 			ins->depth = near_plane.distance_to(ins->transform.origin);
 			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
+
+			// if lod is active, and the instance is not within its lod range, don't render it
+			if (ins->lod_begin >= 0.f && ins->lod_begin < ins->lod_end) { // lod valid
+				if (!(ins->lod_begin <= ins->depth && ins->depth <= ins->lod_end)) {
+					keep = false;
+				}
+			}
 		}
 
 		if (!keep) {
