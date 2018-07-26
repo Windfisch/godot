@@ -858,9 +858,9 @@ void VisualServerScene::instance_geometry_set_draw_range(RID p_instance, float p
 	ERR_FAIL_COND(!instance);
 
 	instance->lod_begin = p_min;
-	instance->lod_end   = p_max;
+	instance->lod_end = p_max;
 	instance->lod_begin_hysteresis = p_min_margin;
-	instance->lod_end_hysteresis   = p_max_margin;
+	instance->lod_end_hysteresis = p_max_margin;
 }
 void VisualServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) {
 }
@@ -1952,10 +1952,10 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				float lod_end_with_hys = ins->lod_end;
 				if (ins->prev_lod_state) {
 					lod_begin_with_hys -= ins->lod_begin_hysteresis / 2.f;
-					lod_end_with_hys   += ins->lod_end_hysteresis / 2.f;
+					lod_end_with_hys += ins->lod_end_hysteresis / 2.f;
 				} else {
 					lod_begin_with_hys += ins->lod_begin_hysteresis / 2.f;
-					lod_end_with_hys   -= ins->lod_end_hysteresis / 2.f;
+					lod_end_with_hys -= ins->lod_end_hysteresis / 2.f;
 				}
 
 				if (ins->lod_begin <= 0.f) {
