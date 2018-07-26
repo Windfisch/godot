@@ -1947,7 +1947,12 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 			// if lod is active, and the instance is not within its lod range, don't render it
 			if (ins->lod_begin >= 0.f && ins->lod_begin < ins->lod_end) { // lod valid
-				if (!(ins->lod_begin <= ins->depth && ins->depth <= ins->lod_end)) {
+				float lod_begin_with_hys = ins->lod_begin - (ins->prev_lod_state ? ins->lod_begin_hysteresis : 0.f);
+				float lod_end_with_hys = ins->lod_end + (ins->prev_lod_state ? ins->lod_end_hysteresis : 0.f);
+				if (lod_begin_with_hys <= ins->depth && ins->depth <= lod_end_with_hys) {
+					ins->prev_lod_state = true;
+				} else {
+					ins->prev_lod_state = false;
 					keep = false;
 				}
 			}
