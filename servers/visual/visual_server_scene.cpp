@@ -32,6 +32,8 @@
 #include "os/os.h"
 #include "visual_server_global.h"
 #include "visual_server_raster.h"
+
+#include <limits>
 /* CAMERA API */
 
 RID VisualServerScene::camera_create() {
@@ -1946,7 +1948,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
 
 			// if lod is active, and the instance is not within its lod range, don't render it
-			if (ins->lod_begin >= 0.f && ins->lod_begin < ins->lod_end) { // lod valid
+			if (ins->lod_begin > 0.f || ins->lod_end > 0.f) { // lod valid
 				float lod_begin_with_hys = ins->lod_begin;
 				float lod_end_with_hys = ins->lod_end;
 				if (ins->prev_lod_state) {
@@ -1955,6 +1957,13 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				} else {
 					lod_begin_with_hys += ins->lod_begin_hysteresis / 2.f;
 					lod_end_with_hys   -= ins->lod_end_hysteresis / 2.f;
+				}
+
+				if (ins->lod_begin <= 0.f) {
+					lod_begin_with_hys = -std::numeric_limits<float>::infinity();
+				}
+				if (ins->lod_end <= 0.f) {
+					lod_end_with_hys = +std::numeric_limits<float>::infinity();
 				}
 
 				if (lod_begin_with_hys <= ins->depth && ins->depth < lod_end_with_hys) {
