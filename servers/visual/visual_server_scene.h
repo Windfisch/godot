@@ -178,6 +178,7 @@ public:
 		float lod_end;
 		float lod_begin_hysteresis;
 		float lod_end_hysteresis;
+		bool prev_lod_state; // keeps track of whether the instance was inside the lod range in the last frame.
 		RID lod_instance;
 
 		uint64_t last_render_pass;

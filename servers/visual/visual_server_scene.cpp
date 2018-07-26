@@ -32,6 +32,7 @@
 #include "os/os.h"
 #include "visual_server_global.h"
 #include "visual_server_raster.h"
+
 /* CAMERA API */
 
 RID VisualServerScene::camera_create() {
@@ -842,6 +843,14 @@ void VisualServerScene::instance_geometry_set_material_override(RID p_instance, 
 }
 
 void VisualServerScene::instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) {
+
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->lod_begin = p_min;
+	instance->lod_end = p_max;
+	instance->lod_begin_hysteresis = p_min_margin;
+	instance->lod_end_hysteresis = p_max_margin;
 }
 void VisualServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) {
 }
@@ -1848,6 +1857,33 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 			ins->depth = near_plane.distance_to(ins->transform.origin);
 			ins->depth_layer = CLAMP(int(ins->depth * 16 / z_far), 0, 15);
+
+			// if lod is active, and the instance is not within its lod range, don't render it
+			if (ins->lod_begin > 0.f || ins->lod_end > 0.f) { // lod valid
+				float lod_begin_with_hys = ins->lod_begin;
+				float lod_end_with_hys = ins->lod_end;
+				if (ins->prev_lod_state) {
+					lod_begin_with_hys -= ins->lod_begin_hysteresis / 2.f;
+					lod_end_with_hys += ins->lod_end_hysteresis / 2.f;
+				} else {
+					lod_begin_with_hys += ins->lod_begin_hysteresis / 2.f;
+					lod_end_with_hys -= ins->lod_end_hysteresis / 2.f;
+				}
+
+				if (ins->lod_begin <= 0.f) {
+					lod_begin_with_hys = -Math_INF;
+				}
+				if (ins->lod_end <= 0.f) {
+					lod_end_with_hys = +Math_INF;
+				}
+
+				if (lod_begin_with_hys <= ins->depth && ins->depth < lod_end_with_hys) {
+					ins->prev_lod_state = true;
+				} else {
+					ins->prev_lod_state = false;
+					keep = false;
+				}
+			}
 		}
 
 		if (!keep) {
