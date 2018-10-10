@@ -159,6 +159,12 @@ CSGBrush *CSGShape::_get_brush() {
 	return brush;
 }
 
+static unsigned int dump_float(real_t val)
+{
+	static_assert(sizeof(val)==sizeof(unsigned int));
+	return *reinterpret_cast<unsigned int*>(&val);
+}
+
 void CSGShape::_update_shape() {
 
 	if (parent)
@@ -186,12 +192,17 @@ void CSGShape::_update_shape() {
 
 			Plane p(n->faces[i].vertices[0], n->faces[i].vertices[1], n->faces[i].vertices[2]);
 
+			printf("normal len=%lf,  %lf %lf %lf\n", p.normal.length(), p.normal.x,p.normal.y,p.normal.z);
 			for (int j = 0; j < 3; j++) {
 				Vector3 v = n->faces[i].vertices[j];
 				Vector3 add;
+				printf("\tlooking up %f %f %f", v.x,v.y,v.z);
+				printf("\tlooking up %x %x %x", dump_float(v.x), dump_float(v.y), dump_float(v.z));
 				if (vec_map.lookup(v, add)) {
+					printf(" -> hit\n");
 					add += p.normal;
 				} else {
+					printf(" -> miss\n");
 					add = p.normal;
 				}
 				vec_map.set(v, add);
@@ -266,7 +277,13 @@ void CSGShape::_update_shape() {
 				Vector3 normal = p.normal;
 
 				if (n->faces[i].smooth && vec_map.lookup(v, normal)) {
+					printf("normalizing a normal of %f %f %f\n", normal.x, normal.y, normal.z);
 					normal.normalize();
+				}
+				else
+				{
+					if (n->faces[i].smooth)
+						printf("THIS SHOULD NOT HAPPEN, could not find %f %f %f = %x %x %x at %i %i\n", v.x, v.y, v.z, dump_float(v.x), dump_float(v.y), dump_float(v.z), i,j);
 				}
 
 				if (n->faces[i].invert) {
