@@ -176,7 +176,7 @@ void CSGShape::_update_shape() {
 	CSGBrush *n = _get_brush();
 	ERR_FAIL_COND(!n);
 
-	OAHashMap<Vector3, Vector3> vec_map;
+	HashMap<Vector3, Vector3> vec_map;
 
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
@@ -198,7 +198,10 @@ void CSGShape::_update_shape() {
 				Vector3 add;
 				printf("\tlooking up %f %f %f", v.x,v.y,v.z);
 				printf("\tlooking up %x %x %x", dump_float(v.x), dump_float(v.y), dump_float(v.z));
-				if (vec_map.lookup(v, add)) {
+				Vector3* tmp = vec_map.getptr(v);
+				if (tmp) {
+					add = *tmp;
+				//if (vec_map.lookup(v, add)) {
 					printf(" -> hit\n");
 					add += p.normal;
 				} else {
@@ -276,7 +279,10 @@ void CSGShape::_update_shape() {
 
 				Vector3 normal = p.normal;
 
-				if (n->faces[i].smooth && vec_map.lookup(v, normal)) {
+				Vector3* tmp = vec_map.getptr(v);
+				//if (n->faces[i].smooth && vec_map.lookup(v, normal)) {
+				if (n->faces[i].smooth && tmp) {
+					normal = *tmp;
 					printf("normalizing a normal of %f %f %f\n", normal.x, normal.y, normal.z);
 					normal.normalize();
 				}
