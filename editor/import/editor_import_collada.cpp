@@ -817,7 +817,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					SWAP(bn.z, bn.y);
 					bn.z = -bn.z;
 
-					vertex.tangent.d = vertex.normal.cross(vertex.tangent.normal).dot(bn) > 0 ? 1 : -1;
+					vertex.tangent.d = vertex.normal.cross(vertex.tangent.normal).dot(bn) <= 0 ? 1 : -1;
 				}
 
 #endif
