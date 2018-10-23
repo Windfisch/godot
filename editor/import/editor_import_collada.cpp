@@ -778,7 +778,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 						Vector3 tangent = Vector3(tangent_src->array[tangent_pos + 0], tangent_src->array[tangent_pos + 1], tangent_src->array[tangent_pos + 2]);
 
 						vertex.tangent.normal = tangent;
-						vertex.tangent.d = vertex.normal.cross(tangent).dot(binormal) > 0 ? 1 : -1;
+						vertex.tangent.d = vertex.normal.cross(tangent).dot(binormal) <= 0 ? 1 : -1;
 					}
 				}
 
