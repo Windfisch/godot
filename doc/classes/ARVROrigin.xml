@@ -14,6 +14,15 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="update_world_origin">
+			<return type="void">
+			</return>
+			<description>
+				Triggers a manual, instant update of the [ARVRServer]'s world origin from the [ARVROrigin]'s position and updates [ARVRCamera]'s position.
+				This is performed automatically before running the process callback of any object and therefore needs not be called manually under normal circumstances.
+				When updating this node's transform from a process callback, however, calling this method reduces the latency until the change comes into effect.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale">

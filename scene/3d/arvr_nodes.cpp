@@ -521,6 +521,7 @@ String ARVROrigin::get_configuration_warning() const {
 };
 
 void ARVROrigin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("update_world_origin"), &ARVROrigin::update_world_origin);
 	ClassDB::bind_method(D_METHOD("set_world_scale", "world_scale"), &ARVROrigin::set_world_scale);
 	ClassDB::bind_method(D_METHOD("get_world_scale"), &ARVROrigin::get_world_scale);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "world_scale"), "set_world_scale", "get_world_scale");
@@ -552,6 +553,25 @@ void ARVROrigin::set_world_scale(float p_world_scale) {
 	arvr_server->set_world_scale(p_world_scale);
 };
 
+void ARVROrigin::update_world_origin() { // TODO and update camera positions, but that's a long name
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL(arvr_server);
+
+	// set our world origin to our node transform
+	arvr_server->set_world_origin(get_global_transform());
+
+	// check if we have a primary interface
+	Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
+	if (arvr_interface.is_valid() && tracked_camera != NULL) {
+		// get our positioning transform for our headset
+		Transform t = arvr_interface->get_tampered_transform_for_eye(ARVRInterface::EYE_MONO, Transform());
+
+		// now apply this to our camera
+		tracked_camera->set_transform(t);
+	};
+}
+
 void ARVROrigin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -561,22 +581,7 @@ void ARVROrigin::_notification(int p_what) {
 			set_process_internal(false);
 		}; break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			// get our ARVRServer
-			ARVRServer *arvr_server = ARVRServer::get_singleton();
-			ERR_FAIL_NULL(arvr_server);
-
-			// set our world origin to our node transform
-			arvr_server->set_world_origin(get_global_transform());
-
-			// check if we have a primary interface
-			Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
-			if (arvr_interface.is_valid() && tracked_camera != NULL) {
-				// get our positioning transform for our headset
-				Transform t = arvr_interface->get_transform_for_eye(ARVRInterface::EYE_MONO, Transform());
-
-				// now apply this to our camera
-				tracked_camera->set_transform(t);
-			};
+			update_world_origin();
 		}; break;
 		default:
 			break;

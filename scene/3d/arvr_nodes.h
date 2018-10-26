@@ -161,6 +161,7 @@ public:
 
 	float get_world_scale() const;
 	void set_world_scale(float p_world_scale);
+	void update_world_origin();
 
 	ARVROrigin();
 	~ARVROrigin();
