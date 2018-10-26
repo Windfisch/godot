@@ -46,6 +46,8 @@ void ARVRInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_render_targetsize"), &ARVRInterface::get_render_targetsize);
 	ClassDB::bind_method(D_METHOD("is_stereo"), &ARVRInterface::is_stereo);
+	
+	ClassDB::bind_method(D_METHOD("set_tamper_hmd_transform"), &ARVRInterface::set_tamper_hmd_transform);
 
 	ADD_GROUP("Interface", "interface_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interface_is_primary"), "set_is_primary", "is_primary");
@@ -128,6 +130,15 @@ bool ARVRInterface::get_anchor_detection_is_enabled() const {
 	return false;
 };
 
-void ARVRInterface::set_anchor_detection_is_enabled(bool p_enable){
+void ARVRInterface::set_anchor_detection_is_enabled(bool p_enable) {
 	// don't do anything here, this needs to be implemented on AR interface to enable/disable things like plane detection etc.
 };
+
+Transform ARVRInterface::get_tampered_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform) {
+	Transform eye_abs = get_transform_for_eye(p_eye, p_cam_transform);
+	Transform mono_abs = get_transform_for_eye(ARVRInterface::EYE_MONO, p_cam_transform);
+	Transform eye_rel = mono_abs.affine_inverse() * eye_abs;
+	Transform mono_abs_tampered = mono_abs * tamper_hmd_transform;
+	Transform eye_abs_tampered = mono_abs_tampered * eye_rel;
+	return eye_abs_tampered;
+}

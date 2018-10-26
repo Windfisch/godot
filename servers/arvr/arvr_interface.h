@@ -80,10 +80,14 @@ protected:
 	Tracking_status tracking_state;
 	static void _bind_methods();
 
+	Transform tamper_hmd_transform;
+
 public:
 	/** general interface information **/
 	virtual StringName get_name() const;
 	virtual int get_capabilities() const = 0;
+
+	void set_tamper_hmd_transform(Transform t) { tamper_hmd_transform = t; }
 
 	bool is_primary();
 	void set_is_primary(bool p_is_primary);
@@ -106,7 +110,10 @@ public:
 
 	virtual Size2 get_render_targetsize() = 0; /* returns the recommended render target size per eye for this device */
 	virtual bool is_stereo() = 0; /* returns true if this interface requires stereo rendering (for VR HMDs) or mono rendering (for mobile AR) */
+private:
 	virtual Transform get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform) = 0; /* get each eyes camera transform, also implement EYE_MONO */
+public:
+	Transform get_tampered_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform); /* get each eyes camera transform, after tampering the HMD's pose. also implement EYE_MONO */
 	virtual CameraMatrix get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) = 0; /* get each eyes projection matrix */
 	virtual void commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) = 0; /* output the left or right eye */
 
@@ -121,3 +128,4 @@ VARIANT_ENUM_CAST(ARVRInterface::Eyes);
 VARIANT_ENUM_CAST(ARVRInterface::Tracking_status);
 
 #endif
+

@@ -1709,7 +1709,7 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 	// We also ignore our camera position, it will have been positioned with a slightly old tracking position.
 	// Instead we take our origin point and have our ar/vr interface add fresh tracking data! Whoohoo!
 	Transform world_origin = ARVRServer::get_singleton()->get_world_origin();
-	Transform cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
+	Transform cam_transform = p_interface->get_tampered_transform_for_eye(p_eye, world_origin);
 
 	// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
 	if (p_eye == ARVRInterface::EYE_LEFT) {
@@ -1717,7 +1717,7 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 
 		// Center our transform, we assume basis is equal.
 		Transform mono_transform = cam_transform;
-		Transform right_transform = p_interface->get_transform_for_eye(ARVRInterface::EYE_RIGHT, world_origin);
+		Transform right_transform = p_interface->get_tampered_transform_for_eye(ARVRInterface::EYE_RIGHT, world_origin);
 		mono_transform.origin += right_transform.origin;
 		mono_transform.origin *= 0.5;
 
