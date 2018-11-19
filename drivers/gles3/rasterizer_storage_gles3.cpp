@@ -1903,6 +1903,10 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 	p_shader->uniforms.clear();
 
+	if (p_shader->code == String()) {
+		return; //just invalid, but no error
+	}
+
 	ShaderCompilerGLES3::GeneratedCode gen_code;
 	ShaderCompilerGLES3::IdentifierActions *actions = NULL;
 
@@ -2249,8 +2253,9 @@ Variant RasterizerStorageGLES3::material_get_param_default(RID p_material, const
 
 	if (material->shader) {
 		if (material->shader->uniforms.has(p_param)) {
-			Vector<ShaderLanguage::ConstantNode::Value> default_value = material->shader->uniforms[p_param].default_value;
-			return ShaderLanguage::constant_value_to_variant(default_value, material->shader->uniforms[p_param].type);
+			ShaderLanguage::ShaderNode::Uniform uniform = material->shader->uniforms[p_param];
+			Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+			return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.hint);
 		}
 	}
 	return Variant();
@@ -3782,12 +3787,14 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 	Mesh *mesh = mesh_owner.get(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
 
-	if (mesh->custom_aabb != AABB())
+	if (mesh->custom_aabb != AABB()) {
 		return mesh->custom_aabb;
+	}
 
 	Skeleton *sk = NULL;
-	if (p_skeleton.is_valid())
+	if (p_skeleton.is_valid()) {
 		sk = skeleton_owner.get(p_skeleton);
+	}
 
 	AABB aabb;
 
@@ -3826,6 +3833,7 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 						mtx.origin.y = texture[base_ofs + 3];
 
 						AABB baabb = mtx.xform(skbones[j]);
+
 						if (first) {
 							laabb = baabb;
 							first = false;
@@ -3857,6 +3865,8 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 						mtx.basis[2].y = texture[base_ofs + 1];
 						mtx.basis[2].z = texture[base_ofs + 2];
 						mtx.origin.z = texture[base_ofs + 3];
+
+						print_line("surface " + itos(i) + " bone " + itos(j) + " aabb: " + skbones[j]);
 
 						AABB baabb = mtx.xform(skbones[j]);
 						if (first) {
